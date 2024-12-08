@@ -1,54 +1,45 @@
 const express = require("express");
 const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
-const Listing = require("../models/listing.js");
 const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
+const {
+  index,
+  renderNewForm,
+  showListing,
+  createListing,
+  updateListing,
+  destroyListing,
+  renderEditForm,
+} = require("../controllers/listing.js");
+const multer = require("multer");
+const {storage} = require("../cloudconfig.js");
+const upload = multer({ storage });
 
-const { index, renderNewForm, showListing, createListing, updateListing, deleteListing, renderEditForm } = require("../controllers/listing.js");
-
-//Index Route
-router.get("/", index);
-
-//New Route
-router.get("/new", isLoggedIn, renderNewForm );
-
-//Show Route
-router.get(
-  "/:id",
-  wrapAsync(showListing)
-);
-
-//Create Route
-router.post(
-  "/",
+// Index Route
+router.route("/").get(index).post(
   isLoggedIn,
+  upload.single("listing[image]"),
   validateListing,
   wrapAsync(createListing)
 );
 
-//Edit Route
-router.get(
-  "/:id/edit",
-  isLoggedIn,
-  isOwner,
-  wrapAsync(renderEditForm)
-);
+// New Route
+router.get("/new", isLoggedIn, renderNewForm);
 
-// Update Route
-router.put(
-  "/:id",
-  isLoggedIn,
-  isOwner,
-  validateListing,
-  wrapAsync(updateListing)
-);
+// Show, Update, Delete Route
+router
+  .route("/:id") // Dynamic parameter :id
+  .get(wrapAsync(showListing))
+  .put(
+    isLoggedIn,
+    isOwner,
+    upload.single("listing[image]"),
+    validateListing,
+    wrapAsync(updateListing)
+  )
+  .delete(isLoggedIn, isOwner, wrapAsync(destroyListing));
 
-//Delete
-router.delete(
-  "/:id",
-  isLoggedIn,
-  isOwner,
-  wrapAsync(deleteListing)
-);
+// Edit Route
+router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(renderEditForm));
 
 module.exports = router;

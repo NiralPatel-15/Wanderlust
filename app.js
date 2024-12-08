@@ -1,3 +1,8 @@
+if(process.env.NODE_ENV != "production"){
+  require("dotenv").config();
+}
+
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -63,10 +68,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.get("/", (req, res) => {
-  res.send("Hi, I am root");
-});
+// // Routes
+// app.get("/", (req, res) => {
+//   res.send("Hi, I am root");
+// });
 
 // app.get("/demouser", async (req, res) => {
 //   let fakeUser = new User({
